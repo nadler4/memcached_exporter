@@ -106,6 +106,7 @@ type Exporter struct {
 	slabsChunksFreeEnd       *prometheus.Desc
 	slabsMemRequested        *prometheus.Desc
 	slabsCommands            *prometheus.Desc
+	getLatency               *prometheus.Desc
 }
 
 // New returns an initialized exporter.
@@ -114,6 +115,12 @@ func New(server string, timeout time.Duration, logger log.Logger) *Exporter {
 		address: server,
 		timeout: timeout,
 		logger:  logger,
+		getLatency: prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", "get_latency"),
+			"The intenal latency of Get command.",
+			nil,
+			nil,
+		),
 		up: prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", "up"),
 			"Could the memcached server be reached.",
@@ -516,6 +523,7 @@ func New(server string, timeout time.Duration, logger log.Logger) *Exporter {
 // Describe describes all the metrics exported by the memcached exporter. It
 // implements prometheus.Collector.
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
+	ch <- e.getLatency
 	ch <- e.up
 	ch <- e.uptime
 	ch <- e.time
