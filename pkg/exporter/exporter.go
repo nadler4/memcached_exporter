@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -628,9 +629,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 func latency(mc *memcache.Client) {
 	mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
-	if err != nil {
-		fmt.Println("ERROR")
-	}
 	before := time.Now()
 	it, err := mc.Get("foo")
 	if err != nil {
