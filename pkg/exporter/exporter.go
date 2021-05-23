@@ -626,6 +626,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	l := latency(c)
 	fmt.Printf("The delta is: %+vms\n", l)
+	ch <- prometheus.MustNewConstMetric(e.getLatency, prometheus.GaugeValue, l)
 
 	ch <- prometheus.MustNewConstMetric(e.up, prometheus.GaugeValue, up)
 }
@@ -648,7 +649,6 @@ func latency(mc *memcache.Client) float64 {
 	diff_s := diff.Seconds()
 	y := 1000
 	diff_ms := diff_s * float64(y)
-	fmt.Printf("The delta is: %+vms\n", diff_ms)
 	return diff_ms
 }
 
