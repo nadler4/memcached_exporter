@@ -3,7 +3,7 @@ go:
     # be updated.
     version: 1.16
 repository:
-    path: github.com/prometheus/memcached_exporter
+    path: github.com/nadler4/memcached_exporter
 build:
     binaries:
       - name: memcached_exporter

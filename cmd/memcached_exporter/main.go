@@ -31,7 +31,7 @@ import (
 	webflag "github.com/prometheus/exporter-toolkit/web/kingpinflag"
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/prometheus/memcached_exporter/pkg/exporter"
+	"github.com/nadler4/memcached_exporter/pkg/exporter"
 )
 
 func main() {

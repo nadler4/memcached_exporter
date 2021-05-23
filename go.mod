@@ -1,4 +1,4 @@
-module github.com/prometheus/memcached_exporter
+module github.com/nadler4/memcached_exporter
 
 require (
 	github.com/go-kit/kit v0.10.0
