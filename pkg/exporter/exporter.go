@@ -626,6 +626,30 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(e.up, prometheus.GaugeValue, up)
 }
 
+func latency(mc *memcache.Client) {
+	mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
+	if err != nil {
+		fmt.Println("ERROR")
+	}
+	before := time.Now()
+	it, err := mc.Get("foo")
+	if err != nil {
+		fmt.Println("ERROR")
+	}
+	after := time.Now()
+	key := it.Key
+	bytes := it.Value
+	value := string(bytes[:])
+	fmt.Printf("Key is: %+v\nValue is: %+v\n", key, value)
+	fmt.Printf("Before: %+v\n", before)
+	fmt.Printf("After: %+v\n", after)
+	diff := after.Sub(before)
+	diff_s := diff.Seconds()
+	y := 1000
+	diff_ms := diff_s * float64(y)
+	fmt.Printf("The delta is: %+vms\n", diff_ms)
+}
+
 func (e *Exporter) parseStats(ch chan<- prometheus.Metric, stats map[net.Addr]memcache.Stats) error {
 	// TODO(ts): Clean up and consolidate metric mappings.
 	itemsCounterMetrics := map[string]*prometheus.Desc{
