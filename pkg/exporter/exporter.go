@@ -625,7 +625,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	l := latency(c)
-	fmt.Printf("The delta is: %+vms\n", l)
 	ch <- prometheus.MustNewConstMetric(e.getLatency, prometheus.GaugeValue, l)
 
 	ch <- prometheus.MustNewConstMetric(e.up, prometheus.GaugeValue, up)
@@ -637,14 +636,10 @@ func latency(mc *memcache.Client) float64 {
 	it, err := mc.Get("foo")
 	if err != nil {
 		fmt.Println("ERROR")
+		return -1
 	}
+	_ = it
 	after := time.Now()
-	key := it.Key
-	bytes := it.Value
-	value := string(bytes[:])
-	fmt.Printf("Key is: %+v\nValue is: %+v\n", key, value)
-	fmt.Printf("Before: %+v\n", before)
-	fmt.Printf("After: %+v\n", after)
 	diff := after.Sub(before)
 	diff_s := diff.Seconds()
 	y := 1000
