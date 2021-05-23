@@ -624,10 +624,13 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		up = 0
 	}
 
+	l = latency(c)
+	fmt.Printf("The delta is: %+vms\n", l)
+
 	ch <- prometheus.MustNewConstMetric(e.up, prometheus.GaugeValue, up)
 }
 
-func latency(mc *memcache.Client) {
+func latency(mc *memcache.Client) string {
 	mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
 	before := time.Now()
 	it, err := mc.Get("foo")
@@ -646,6 +649,7 @@ func latency(mc *memcache.Client) {
 	y := 1000
 	diff_ms := diff_s * float64(y)
 	fmt.Printf("The delta is: %+vms\n", diff_ms)
+	return diff_ms
 }
 
 func (e *Exporter) parseStats(ch chan<- prometheus.Metric, stats map[net.Addr]memcache.Stats) error {
