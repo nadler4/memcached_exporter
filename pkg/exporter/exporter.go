@@ -108,6 +108,7 @@ type Exporter struct {
 	slabsMemRequested        *prometheus.Desc
 	slabsCommands            *prometheus.Desc
 	getLatency               *prometheus.Desc
+	setLatency               *prometheus.Desc
 }
 
 // New returns an initialized exporter.
@@ -118,7 +119,13 @@ func New(server string, timeout time.Duration, logger log.Logger) *Exporter {
 		logger:  logger,
 		getLatency: prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", "get_latency"),
-			"The intenal latency of Get command.",
+			"The internal latency of Get command.",
+			nil,
+			nil,
+		),
+		setLatency: prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, "", "set_latency"),
+			"The internal latency of Set command.",
 			nil,
 			nil,
 		),
@@ -525,6 +532,7 @@ func New(server string, timeout time.Duration, logger log.Logger) *Exporter {
 // implements prometheus.Collector.
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- e.getLatency
+	ch <- e.setLatency
 	ch <- e.up
 	ch <- e.uptime
 	ch <- e.time
@@ -624,27 +632,31 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		up = 0
 	}
 
-	l := latency(c)
-	ch <- prometheus.MustNewConstMetric(e.getLatency, prometheus.GaugeValue, l)
+	set, get := latency(c)
+	
+	ch <- prometheus.MustNewConstMetric(e.setLatency, prometheus.GaugeValue, set)
+	ch <- prometheus.MustNewConstMetric(e.getLatency, prometheus.GaugeValue, get)
 
 	ch <- prometheus.MustNewConstMetric(e.up, prometheus.GaugeValue, up)
 }
 
-func latency(mc *memcache.Client) float64 {
+func latency(mc *memcache.Client) (float64, float64) {
+	before_set := time.Now()
 	mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
-	before := time.Now()
+	after_set := time.Now()
+	before_get := time.Now()
 	it, err := mc.Get("foo")
 	if err != nil {
 		fmt.Println("ERROR")
-		return -1
+		return -1, -1
 	}
 	_ = it
-	after := time.Now()
-	diff := after.Sub(before)
-	diff_s := diff.Seconds()
-	y := 1000
-	diff_ms := diff_s * float64(y)
-	return diff_ms
+	after_get := time.Now()
+	set_diff := after_set.Sub(before_set).Seconds()
+	get_diff := after_get.Sub(before_get).Seconds()
+	set_diff_ms := set_diff * float64(1000)
+	get_diff_ms := get_diff * float64(1000)
+	return set_diff_ms, get_diff_ms
 }
 
 func (e *Exporter) parseStats(ch chan<- prometheus.Metric, stats map[net.Addr]memcache.Stats) error {
