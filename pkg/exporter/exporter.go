@@ -633,7 +633,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	set, get := latency(c)
-	
 	ch <- prometheus.MustNewConstMetric(e.setLatency, prometheus.GaugeValue, set)
 	ch <- prometheus.MustNewConstMetric(e.getLatency, prometheus.GaugeValue, get)
 
