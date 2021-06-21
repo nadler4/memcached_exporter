@@ -641,10 +641,13 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 func latency(mc *memcache.Client) (float64, float64) {
 	before_set := time.Now()
-	mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
+	value := before_set.String()
+	res := strings.Split(value, " ")
+	key := strings.Split(res[1], ".")[1]
+	mc.Set(&memcache.Item{Key: key, Value: []byte(value)})
 	after_set := time.Now()
 	before_get := time.Now()
-	it, err := mc.Get("foo")
+	it, err := mc.Get(key)
 	if err != nil {
 		fmt.Println("ERROR")
 		return -1, -1
